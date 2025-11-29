@@ -1,14 +1,15 @@
 
 // === 服务器配置 ===
-// 自动根据浏览器地址栏识别后端 IP
-// 这样部署到云服务器后，无需修改代码即可正常连接
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// 重要: 请将下面的 'localhost' 修改为你的云服务器公网 IP 地址
+// 例如: export const SERVER_HOST = '47.110.123.45';
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+export const SERVER_HOST = 'localhost'; 
+
+export const SERVER_PORT = 8080;
+
 export const getWsUrl = () => {
-  // 如果是 https/http 协议，自动匹配对应的 ws/wss
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  // 获取当前访问的主机名 (localhost 或 IP)
-  const host = window.location.hostname;
-  // 后端固定端口 8080
-  const port = 8080;
-  
-  return `${protocol}//${host}:${port}`;
+  return `${protocol}//${SERVER_HOST}:${SERVER_PORT}`;
 };
