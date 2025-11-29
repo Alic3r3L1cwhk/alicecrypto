@@ -1,0 +1,5 @@
+{
+  "name": "AliceCrypto实验平台",
+  "description": "展示隐私保护外包计算（同态加密）和安全Socket通信的密码学实验平台。",
+  "requestFramePermissions": []
+}
