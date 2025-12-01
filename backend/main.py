@@ -202,10 +202,10 @@ async def handler(websocket):
 
 async def main():
     logger.info("=== AliceCrypto 后端服务启动 ===")
-    logger.info("监听端口: 8080 (0.0.0. 0)")
+    logger.info("监听端口: 8080 (0.0.0.0)")
     
     try:
-        async with websockets.serve(handler, "0. 0.0.0", 8080):
+        async with websockets.serve(handler, "0.0.0.0", 8080):
             await asyncio.Future()
     except Exception as e:
         logger.critical(f"服务器启动失败: {e}")
