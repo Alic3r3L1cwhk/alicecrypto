@@ -96,9 +96,6 @@ python main.py
 cd ..
 npm install
 npm run dev
-```
-
-访问 `http://localhost:5173` 即可体验。
 
 ---
 
@@ -142,6 +139,8 @@ ps -ef | grep main.py
 ```
 
 ### 第三步：部署前端
+
+⚠️ **注意**：在构建之前，请务必修改 config.ts 中的 IP 地址为服务器的公网 IP。
 
 ```bash
 cd ..
