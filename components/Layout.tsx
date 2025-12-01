@@ -1,20 +1,29 @@
 
 import React from 'react';
+import { LogOut, User } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
   activeTab: 'fhe' | 'mpc';
   onTabChange: (tab: 'fhe' | 'mpc') => void;
+  currentUser?: { username: string; token: string } | null;
+  onLogout?: () => void;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange }) => {
+const Layout: React.FC<LayoutProps> = ({ 
+  children, 
+  activeTab, 
+  onTabChange,
+  currentUser,
+  onLogout
+}) => {
   return (
     <div className="min-h-screen bg-cyber-900 text-cyber-text font-sans flex flex-col md:flex-row">
       {/* 侧边栏 */}
       <aside className="w-full md:w-64 bg-cyber-800 border-r border-cyber-700 flex-shrink-0">
         <div className="p-6 border-b border-cyber-700">
           <h1 className="text-xl font-bold text-cyber-accent tracking-tighter italic">
-            AliceCrypto <span className="text-white not-italic text-sm bg-cyber-700 px-1 rounded">v2.1</span>
+            AliceCrypto <span className="text-white not-italic text-sm bg-cyber-700 px-1 rounded">v2.2</span>
           </h1>
           <p className="text-xs text-cyber-dim mt-2">安全多方计算实验平台</p>
         </div>
@@ -35,7 +44,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange }) => 
             </svg>
             <div>
               <div className="font-semibold">MPC 多方计算</div>
-              <div className="text-[10px] opacity-70">隐私比对 / Socket传输</div>
+              <div className="text-[10px] opacity-70">隐私比对 / WebSocket传输</div>
             </div>
           </button>
 
@@ -57,7 +66,29 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange }) => 
           </button>
         </nav>
 
-        <div className="p-6 mt-auto">
+        <div className="p-6 mt-auto space-y-4">
+          {/* 用户信息面板 */}
+          {currentUser && (
+            <div className="bg-cyber-700 rounded p-4 text-xs border border-cyber-500 bg-opacity-40 backdrop-blur">
+              <div className="flex items-center gap-2 mb-3">
+                <User className="h-4 w-4 text-cyber-accent" />
+                <span className="text-cyber-accent font-bold uppercase">用户信息</span>
+              </div>
+              <div className="mb-3">
+                <div className="text-cyber-dim text-[10px]">账号</div>
+                <div className="text-cyber-text font-mono break-words">{currentUser.username}</div>
+              </div>
+              <button
+                onClick={onLogout}
+                className="w-full bg-red-900/30 hover:bg-red-900/50 border border-red-500/50 text-red-400 hover:text-red-300 rounded px-2 py-1 text-[11px] font-semibold transition flex items-center justify-center gap-1"
+              >
+                <LogOut className="h-3 w-3" />
+                登出
+              </button>
+            </div>
+          )}
+
+          {/* 系统状态面板 */}
           <div className="bg-cyber-700 rounded p-4 text-xs border border-cyber-500 bg-opacity-40 backdrop-blur">
             <h3 className="text-cyber-accent font-bold mb-2 uppercase">系统状态</h3>
             <div className="flex justify-between mb-1">
@@ -67,6 +98,10 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange }) => 
             <div className="flex justify-between mb-1">
               <span>后端:</span>
               <span className="text-blue-400 font-mono">Python 3.10</span>
+            </div>
+            <div className="flex justify-between">
+              <span>认证:</span>
+              <span className="text-yellow-400 font-mono">SQLite</span>
             </div>
           </div>
         </div>
@@ -79,11 +114,11 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange }) => 
             <h2 className="text-3xl font-bold text-white flex items-center gap-3">
               {activeTab === 'mpc' && 'MPC: 安全多方计算平台'}
               {activeTab === 'fhe' && 'FHE: 全同态加密引擎'}
-              <span className="text-xs bg-cyber-700 text-cyber-accent px-2 py-0.5 rounded border border-cyber-600">v2.1</span>
+              <span className="text-xs bg-cyber-700 text-cyber-accent px-2 py-0.5 rounded border border-cyber-600">v2.2</span>
             </h2>
             <p className="text-cyber-dim mt-1 font-mono text-sm">
-              {activeTab === 'mpc' && '> 集成 Socket 通信层的多方安全比对协议'}
-              {activeTab === 'fhe' && '> 支持加法同态 (Paillier) 与乘法同态 (RSA)'}
+              {activeTab === 'mpc' && '> 集成 WebSocket 通信层的多方安全比对协议'}
+              {activeTab === 'fhe' && '> 支持加法同态 (Paillier) 与乘法同态 (RSA)，自动 5 分钟密钥轮换'}
             </p>
           </div>
           <div className="hidden md:flex items-center space-x-2 bg-cyber-800 px-3 py-1 rounded-full border border-cyber-700">
