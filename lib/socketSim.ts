@@ -1,5 +1,5 @@
-import { SocketLog } from '../../types';
-import { getWsUrl } from '../../config';
+import { SocketLog } from '../types';
+import { getWsUrl } from '../config';
 
 type LogType = 'INFO' | 'DATA' | 'Handshake' | 'Error' | 'WARN';
 type Listener = (log: SocketLog) => void;
