@@ -18,24 +18,30 @@ def init_paillier_keys(key_size=2048):
     
     with _key_lock:
         print(f"[Paillier] 正在生成 {key_size} 位密钥对，请稍候...")
-        start_time = time. time()
+        start_time = time.time()
         _public_key, _private_key = paillier.generate_paillier_keypair(n_length=key_size)
         _key_generated_at = datetime.now()
         elapsed = time.time() - start_time
         print(f"[Paillier] 密钥对生成完成！耗时: {elapsed:.2f}秒")
-        print(f"[Paillier] N 的位数: {_public_key.n. bit_length()} bits")
-        print(f"[Paillier] 生成时间: {_key_generated_at. strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"[Paillier] N 的位数: {_public_key.n.bit_length()} bits")
+        print(f"[Paillier] 生成时间: {_key_generated_at.strftime('%Y-%m-%d %H:%M:%S')}")
 
-def start_key_rotation(key_size=2048, interval=KEY_ROTATION_INTERVAL):
+def start_key_rotation(key_size=2048, interval=KEY_ROTATION_INTERVAL, on_rotate=None):
     """启动密钥轮换定时器"""
+
     def rotation_loop():
         while True:
-            time. sleep(interval)
-            print(f"\n[Paillier] ===== 密钥轮换开始 =====")
+            time.sleep(interval)
+            print("\n[Paillier] ===== 密钥轮换开始 =====")
             init_paillier_keys(key_size)
-            print(f"[Paillier] ===== 密钥轮换完成 =====\n")
-    
-    rotation_thread = threading. Thread(target=rotation_loop, daemon=True)
+            if on_rotate:
+                try:
+                    on_rotate()
+                except Exception as exc:  # noqa: BLE001
+                    print(f"[Paillier] 广播密钥轮换失败: {exc}")
+            print("[Paillier] ===== 密钥轮换完成 =====\n")
+
+    rotation_thread = threading.Thread(target=rotation_loop, daemon=True)
     rotation_thread.start()
     print(f"[Paillier] 密钥轮换服务已启动，间隔: {interval}秒")
 
@@ -47,12 +53,12 @@ def get_key_info():
         
         now = datetime.now()
         next_rotation = _key_generated_at + timedelta(seconds=KEY_ROTATION_INTERVAL)
-        remaining_seconds = max(0, (next_rotation - now). total_seconds())
+        remaining_seconds = max(0, (next_rotation - now).total_seconds())
         
         return {
-            'generated_at': _key_generated_at. strftime('%Y-%m-%d %H:%M:%S'),
+            'generated_at': _key_generated_at.strftime('%Y-%m-%d %H:%M:%S'),
             'generated_at_timestamp': _key_generated_at.timestamp(),
-            'next_rotation_at': next_rotation. strftime('%Y-%m-%d %H:%M:%S'),
+            'next_rotation_at': next_rotation.strftime('%Y-%m-%d %H:%M:%S'),
             'next_rotation_timestamp': next_rotation.timestamp(),
             'remaining_seconds': int(remaining_seconds),
             'rotation_interval': KEY_ROTATION_INTERVAL,
@@ -67,7 +73,7 @@ def get_public_key():
             init_paillier_keys()
         
         return {
-            'n': str(_public_key. n),
+            'n': str(_public_key.n),
             'g': str(_public_key.g)
         }
 
@@ -88,7 +94,7 @@ def encrypt_value(plaintext):
             init_paillier_keys()
         
         encrypted = _public_key.encrypt(plaintext)
-        return str(encrypted. ciphertext())
+        return str(encrypted.ciphertext())
 
 def decrypt_value(ciphertext_str):
     """服务端解密"""
@@ -118,7 +124,7 @@ def compute_homomorphic_sum(pub_n_str, pub_g_str, ciphertexts):
                 encrypted_sum = encrypted_sum + enc_num
         
         if encrypted_sum:
-            return str(encrypted_sum. ciphertext())
+            return str(encrypted_sum.ciphertext())
         return "0"
         
     except Exception as e:

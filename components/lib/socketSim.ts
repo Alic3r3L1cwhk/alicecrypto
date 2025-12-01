@@ -10,16 +10,16 @@ class RealSocketClient {
   private messageHandlers: ((data: any) => void)[] = [];
   
   subscribe(listener: Listener) {
-    this. listeners.push(listener);
+    this.listeners.push(listener);
     return () => {
-      this.listeners = this. listeners.filter(l => l !== listener);
+      this.listeners = this.listeners.filter(l => l !== listener);
     };
   }
 
   onMessage(handler: (data: any) => void) {
     this.messageHandlers.push(handler);
     return () => {
-      this. messageHandlers = this.messageHandlers. filter(h => h !== handler);
+      this.messageHandlers = this.messageHandlers.filter(h => h !== handler);
     };
   }
 
@@ -52,7 +52,7 @@ class RealSocketClient {
 
   connect(): Promise<void> {
     if (this.isConnected()) {
-      return Promise. resolve();
+      return Promise.resolve();
     }
 
     return new Promise((resolve, reject) => {
@@ -77,11 +77,11 @@ class RealSocketClient {
 
       this.ws.onopen = () => {
         clearTimeout(timeout);
-        this. emitLog('CLIENT', 'WebSocket 连接成功建立', 'Handshake');
+        this.emitLog('CLIENT', 'WebSocket 连接成功建立', 'Handshake');
         resolve();
       };
 
-      this. ws.onerror = (err) => {
+      this.ws.onerror = (err) => {
         clearTimeout(timeout);
         this.emitLog('CLIENT', '连接失败，请检查服务器是否启动', 'Error');
         reject(err);
@@ -92,7 +92,7 @@ class RealSocketClient {
         this.ws = null;
       };
 
-      this. ws.onmessage = (event) => {
+      this.ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
           this.messageHandlers.forEach(h => h(data));
@@ -104,15 +104,15 @@ class RealSocketClient {
   }
 
   disconnect() {
-    if (this. ws) {
+    if (this.ws) {
       this.ws.close();
       this.ws = null;
     }
   }
 
   send(data: any) {
-    if (this.ws && this.ws.readyState === WebSocket. OPEN) {
-      this.ws. send(JSON.stringify(data));
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify(data));
     } else {
       this.emitLog('CLIENT', '发送失败：未连接到服务器', 'Error');
     }
@@ -124,7 +124,7 @@ class RealSocketClient {
     type: LogType | 'ERROR' = 'INFO', 
     details?: string
   ) {
-    this.emitLog(sender, message, type === 'ERROR' ?  'Error' : type as LogType, details);
+    this.emitLog(sender, message, type === 'ERROR' ? 'Error' : type as LogType, details);
   }
 }
 

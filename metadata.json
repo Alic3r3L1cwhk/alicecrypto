@@ -1,5 +1,5 @@
 {
-  "name": "AliceCrypto实验平台",
-  "description": "展示隐私保护外包计算（同态加密）和安全Socket通信的密码学实验平台。",
+  "name": "AliceCrypto v2.0",
+  "description": "下一代隐私计算与安全通信实验平台，集成 FHE 与 MPC 协议。",
   "requestFramePermissions": []
 }

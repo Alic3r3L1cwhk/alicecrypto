@@ -1,18 +1,17 @@
 import React, { useState } from 'react';
 import Layout from './components/Layout';
-import PrivacyComputing from './components/PrivacyComputing';
+import FHE from './components/FHE';
 import SecureChat from './components/SecureChat';
+import MPC from './components/MPC';
 
 const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'compute' | 'chat'>('compute');
+  const [activeTab, setActiveTab] = useState<'fhe' | 'mpc' | 'chat'>('fhe');
 
   return (
     <Layout activeTab={activeTab} onTabChange={setActiveTab}>
-      {activeTab === 'compute' ? (
-        <PrivacyComputing />
-      ) : (
-        <SecureChat />
-      )}
+      {activeTab === 'fhe' && <FHE />}
+      {activeTab === 'mpc' && <MPC />}
+      {activeTab === 'chat' && <SecureChat />}
     </Layout>
   );
 };

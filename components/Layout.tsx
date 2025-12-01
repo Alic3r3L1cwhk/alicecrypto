@@ -2,8 +2,8 @@ import React from 'react';
 
 interface LayoutProps {
   children: React.ReactNode;
-  activeTab: 'compute' | 'chat';
-  onTabChange: (tab: 'compute' | 'chat') => void;
+  activeTab: 'fhe' | 'mpc' | 'chat';
+  onTabChange: (tab: 'fhe' | 'mpc' | 'chat') => void;
 }
 
 const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange }) => {
@@ -12,13 +12,15 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange }) => 
       {/* 侧边栏 */}
       <aside className="w-full md:w-64 bg-cyber-800 border-r border-cyber-700 flex-shrink-0">
         <div className="p-6 border-b border-cyber-700">
-          <h1 className="text-lg font-bold text-cyber-accent tracking-tighter">
-            AliceCrypto<span className="text-white">实验平台</span>
+          <h1 className="text-xl font-bold text-cyber-accent tracking-tighter italic">
+            AliceCrypto <span className="text-white not-italic text-sm bg-cyber-700 px-1 rounded">v2.0</span>
           </h1>
-          <p className="text-xs text-cyber-dim mt-2">v1.0.0 [安全环境]</p>
+          <p className="text-xs text-cyber-dim mt-2">下一代隐私计算实验平台</p>
         </div>
         
         <nav className="p-4 space-y-2">
+          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 pl-2">核心模块</div>
+          
           <button
             onClick={() => onTabChange('chat')}
             className={`w-full text-left px-4 py-3 rounded-md transition-all duration-200 flex items-center gap-3 ${
@@ -31,16 +33,33 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange }) => 
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
             <div>
-              <div className="font-semibold">安全通信终端</div>
-              <div className="text-[10px] opacity-70">中级实验：Socket/DH/AES</div>
+              <div className="font-semibold">安全通信仿真</div>
+              <div className="text-[10px] opacity-70">安全通道 / ECDH</div>
             </div>
           </button>
 
           <button
-            onClick={() => onTabChange('compute')}
+            onClick={() => onTabChange('mpc')}
             className={`w-full text-left px-4 py-3 rounded-md transition-all duration-200 flex items-center gap-3 ${
-              activeTab === 'compute' 
-                ? 'bg-cyber-500 text-cyber-accent border-l-4 border-cyber-accent' 
+              activeTab === 'mpc' 
+                ? 'bg-cyber-500 text-cyber-purple border-l-4 border-cyber-purple' 
+                : 'hover:bg-cyber-700 text-cyber-dim'
+            }`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            <div>
+              <div className="font-semibold">MPC 多方计算</div>
+              <div className="text-[10px] opacity-70">秘密分享 / 隐私比对</div>
+            </div>
+          </button>
+
+          <button
+            onClick={() => onTabChange('fhe')}
+            className={`w-full text-left px-4 py-3 rounded-md transition-all duration-200 flex items-center gap-3 ${
+              activeTab === 'fhe' 
+                ? 'bg-cyber-500 text-green-400 border-l-4 border-green-400' 
                 : 'hover:bg-cyber-700 text-cyber-dim'
             }`}
           >
@@ -48,26 +67,26 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange }) => 
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
             <div>
-              <div className="font-semibold">隐私外包计算</div>
-              <div className="text-[10px] opacity-70">高级实验：同态加密/Paillier</div>
+              <div className="font-semibold">FHE 同态引擎</div>
+              <div className="text-[10px] opacity-70">微软 SEAL (仿真) / CKKS</div>
             </div>
           </button>
         </nav>
 
         <div className="p-6 mt-auto">
-          <div className="bg-cyber-700 rounded p-4 text-xs border border-cyber-500">
-            <h3 className="text-cyber-accent font-bold mb-2">系统状态</h3>
+          <div className="bg-cyber-700 rounded p-4 text-xs border border-cyber-500 bg-opacity-40 backdrop-blur">
+            <h3 className="text-cyber-accent font-bold mb-2 uppercase">系统状态</h3>
             <div className="flex justify-between mb-1">
-              <span>通信协议:</span>
-              <span className="text-green-400">Encrypted (TLS 1.3)</span>
+              <span>协议:</span>
+              <span className="text-green-400 font-mono">TLS 1.3 / WSS</span>
             </div>
             <div className="flex justify-between mb-1">
-              <span>服务端:</span>
-              <span className="text-blue-400">Python/Socket</span>
+              <span>后端:</span>
+              <span className="text-blue-400 font-mono">Python 3.10</span>
             </div>
              <div className="flex justify-between">
               <span>数据库:</span>
-              <span className="text-yellow-400">就绪</span>
+              <span className="text-yellow-400 font-mono">SQLite (Encrypted)</span>
             </div>
           </div>
         </div>
@@ -75,20 +94,23 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange }) => 
 
       {/* 主内容区域 */}
       <main className="flex-1 overflow-auto bg-cyber-900 p-4 md:p-8">
-        <header className="mb-8 flex justify-between items-center">
+        <header className="mb-8 flex justify-between items-center border-b border-cyber-700 pb-4">
           <div>
-            <h2 className="text-3xl font-bold text-white">
-              {activeTab === 'chat' ? '安全通信仿真终端' : '隐私保护外包计算系统'}
+            <h2 className="text-3xl font-bold text-white flex items-center gap-3">
+              {activeTab === 'chat' && '安全通信仿真终端'}
+              {activeTab === 'mpc' && 'MPC: 安全多方计算平台'}
+              {activeTab === 'fhe' && 'FHE: 全同态加密引擎'}
+              <span className="text-xs bg-cyber-700 text-cyber-accent px-2 py-0.5 rounded border border-cyber-600">v2.0</span>
             </h2>
-            <p className="text-cyber-dim mt-1">
-              {activeTab === 'chat' 
-                ? '基于 Socket 编程 / Diffie-Hellman 密钥交换 / AES-GCM 加密' 
-                : '服务外包计算 / Paillier 同态加密 / 数据隐私保护'}
+            <p className="text-cyber-dim mt-1 font-mono text-sm">
+              {activeTab === 'chat' && '> 基于 ECDH-P256 & AES-GCM 建立端到端加密连接...'}
+              {activeTab === 'mpc' && '> 协议: Shamir 秘密分享 & 姚氏百万富翁问题 (仿真)'}
+              {activeTab === 'fhe' && '> 引擎: Microsoft SEAL (CKKS/BFV) 仿真接口'}
             </p>
           </div>
-          <div className="hidden md:flex items-center space-x-2">
-            <span className="h-3 w-3 bg-green-500 rounded-full animate-pulse"></span>
-            <span className="text-xs font-mono text-green-500">网络连接正常</span>
+          <div className="hidden md:flex items-center space-x-2 bg-cyber-800 px-3 py-1 rounded-full border border-cyber-700">
+            <span className="h-2 w-2 bg-green-500 rounded-full animate-pulse"></span>
+            <span className="text-xs font-mono text-green-500">系统在线</span>
           </div>
         </header>
         
