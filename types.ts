@@ -1,3 +1,4 @@
+
 export enum EncryptionMode {
   PLAIN = 'PLAIN',
   AES = 'AES',
@@ -19,28 +20,24 @@ export interface EncryptedDataPacket {
   ciphertext: string;
 }
 
-export interface ChatMessage {
-  id: string;
-  sender: 'Alice' | 'Bob';
-  encryptedContent: string;
-  decryptedContent: string;
-  iv: string;
-  timestamp: number;
-}
+// FHE 算法类型
+export type FHEAlgorithm = 'PAILLIER' | 'RSA' | 'ELGAMAL';
 
-// Paillier 密钥信息
+// 密钥信息
 export interface KeyInfo {
   generated_at: string;
-  generated_at_timestamp: number;
   next_rotation_at: string;
-  next_rotation_timestamp: number;
   remaining_seconds: number;
   rotation_interval: number;
   server_time: string;
-  server_timestamp: number;
+  bit_length: number;
+  operation: 'SUM' | 'PRODUCT';
 }
 
 export interface ServerPublicKey {
-  n: string;
-  g: string;
+  n?: string;
+  g?: string;
+  e?: string;
+  p?: string;
+  y?: string;
 }

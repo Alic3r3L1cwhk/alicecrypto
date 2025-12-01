@@ -1,66 +1,79 @@
-# AliceCrypto v2.0 安全多方计算平台
+# AliceCrypto v2.2 全面隐私计算实验台
 
-**AliceCrypto v2.0** 是一个用于展示前沿密码学技术的综合实验平台。新版本强化了前端三大控制台（Secure Chat、FHE、MPC），并同步升级后端 WebSocket 服务，确保所有演示都基于真实的密码学协议完成端到端联动。
-
----
-
-## 🚀 v2.0 特性总览
-
-1. **MPC 安全多方计算控制台**：支持 Shamir 门限分片交互演示，以及后端驱动的 Millionaires Problem（`MPC_GENERATE_SECRET` / `MPC_COMPARE_INIT`）。
-2. **FHE 全同态加密引擎**：提供 Paillier 云端求和、密钥轮换提醒（`KEY_ROTATED`）和服务端直连密钥模式，界面模拟 CKKS/BFV 参数面板。
-3. **Secure Chat**：基于 ECDH + AES-GCM 的安全信道，支持浏览器 WebCrypto 与软件 Polyfill 双栈自动回退。
-4. **实时日志与数据可视化**：前端集中展示 WebSocket 流量、密文、解密结果与 MPC 协议输出，便于课堂演示或实验汇报。
+AliceCrypto v2.2 重新整理了前后端架构，移除了早期的 SecureChat 模拟通道，转而集中展示 **FHE（多算法全同态加密）** 与 **MPC（百万富翁协议 & Shamir 门限方案）** 的端到端链路。所有敏感操作均通过统一的 WebSocket 服务完成，并附带系统时钟与密钥轮换广播，便于课堂或演示场景实时追踪。
 
 ---
 
-## 🔌 后端服务能力
+## 🔑 核心能力
 
-- **统一 WebSocket 网关**：监听 `ws://<SERVER_HOST>:8080`，负责握手、聊天、FHE 与 MPC 全部消息类型。
-- **安全信道**：为每个连接动态生成 ECDH 密钥对，并通过 AES-GCM 对聊天流量进行加解密，同时把密文落库 (`crypto_lab.db`) 便于审计。
-- **Paillier 轮换广播**：后端每 5 分钟自动刷新 2048-bit 密钥，并向所有在线客户端推送 `KEY_ROTATED`（包含新公钥与时间窗口），同步前端状态指示灯。
-- **MPC 会话管理**：为每个客户端维护独立的 Bob 密密数，`MPC_SECRET_GENERATED` 事件返回成功标记，`MPC_COMPARE_RESULT` 则输出 Alice/Bob 的相对大小。
-- **容错日志**：所有请求都会写入 `backend.log`，便于在服务器上排查连接/协议问题。
+- **多算法 FHE 引擎**：Paillier、RSA、ElGamal 三种算法同时在线，由 `backend/fhe_service.py` 统一调度，支持批量加密与云端 SUM/PRODUCT 计算。
+- **5 分钟密钥轮换**：后台线程固定间隔刷新密钥对并广播 `KEY_ROTATED` 事件，同时返回服务器时钟，前端以倒计时方式可视化轮换周期。
+- **MPC 控制台**：Shamir 秘密拆分/重构本地演示 + 通过 WebSocket 启动百万富翁协议，结果与传输层日志实时同步。
+- **统一状态面板**：前端 FHE、MPC 页面均能订阅 `SERVER_TIME` 与最新公钥信息，展示 bit-length、Operation、下一次轮换时间等指标。
 
 ---
 
-## ⚙️ 配置与运行
+## 🧱 架构速览
 
-### 1. 后端（Python + WebSockets）
+```
+┌──────────────┐     WebSocket (JSON 消息)     ┌────────────────────┐
+│ React + Vite │  <-------------------------->  │ Python asyncio svc │
+│ components/* │                                │ backend/main.py    │
+└──────────────┘                                └────────────────────┘
+     ▲   ▲                                               │
+     │   └── socketSim.ts 统一管理连接与日志             │
+     └──── FHE.tsx / MPC.tsx 共享服务时钟和密钥状态  ───┘
+```
+
+- 监听端口：`ws://<host>:8080`
+- 主要模块：`backend/main.py`（WebSocket 路由）、`backend/fhe_service.py`（FHE 引擎）、`components/FHE.tsx`、`components/MPC.tsx`
+
+---
+
+## 🛰️ WebSocket 消息速查
+
+| 类型                  | 方向        | 说明                                                                    |
+| --------------------- | ----------- | ----------------------------------------------------------------------- |
+| `GET_FHE_KEY`         | 前端 → 后端 | 请求指定算法的公钥与 `key_info`（包含倒计时）。                         |
+| `BATCH_ENCRYPT`       | 前端 → 后端 | 发送 `{algorithm, values[]}`，返回 `ENCRYPTED_BATCH`。                  |
+| `COMPUTE_FHE`         | 前端 → 后端 | 发送同态密文数组，收到 `COMPUTE_RESULT`（含 `operation` 与可选明文）。  |
+| `SERVER_TIME`         | 后端 → 前端 | `GET_SERVER_TIME` 或轮换广播触发，提供 `timestamp` 与 `keys` 全量信息。 |
+| `KEY_ROTATED`         | 后端 → 前端 | 每 5 分钟推送一次，提醒 UI 更新公钥、倒计时。                           |
+| `MPC_GENERATE_SECRET` | 前端 → 后端 | 请求服务器生成 Bob 的秘密数值。                                         |
+| `MPC_COMPARE_INIT`    | 前端 → 后端 | 发送 Alice 金额，返回 `MPC_COMPARE_RESULT`。                            |
+
+SecureChat/ECDH/AES 相关消息已全部移除；若历史版本仍有 `CHAT_MESSAGE` 请求，请升级前端或停止调用。
+
+---
+
+## ⚙️ 部署步骤
+
+### 1. 后端服务
 
 ```bash
 cd backend
-python -m venv .venv && .venv\Scripts\activate  # Windows
+python -m venv .venv && .venv\Scripts\activate  # Windows 示例，可自行选择环境
 pip install -r requirements.txt
-python main.py
+python main.py  # 默认监听 0.0.0.0:8080，并输出 backend.log
 ```
 
-- 默认监听 `0.0.0.0:8080`，可通过反向代理或防火墙规则向公网暴露。
-- 运行后会生成 `backend.log` 与 `crypto_lab.db`，确保目录具备写权限。
-- 若需调整密钥轮换周期，可修改 `paillier_service.KEY_ROTATION_INTERVAL`。
-
-### 2. 前端（Vite + React）
+### 2. 前端（Vite）
 
 ```bash
 npm install
-npm run dev      # 本地调试
-npm run build    # 生产构建
-npm run preview  # 部署前预览
+npm run dev     # 开发模式
+# 或
+npm run build && npm run preview
 ```
 
-- 若将后端部署在远程服务器，请更新 `config.ts` 中的 `SERVER_HOST` / `SERVER_PORT`，让 WebSocket 指向正确地址。
-
-### 3. 快速验证
-
-1. 启动后端后，打开前端页面，点击 Secure Chat 的「连接服务器」，日志面板应显示 `HANDSHAKE` 与 `AES-GCM` 建链成功。
-2. 在 FHE 标签页请求公钥、加密整数并发送「云端执行」，应收到 `COMPUTE_RESULT_SERVER_KEY`，同时在服务器控制台看到日志。
-3. 在 MPC 标签页生成 Bob 的秘密，再输入不同的 Alice 值触发安全比对，前端会展示 `Alice is Richer / Bob is Richer` 等结果。
+默认前端运行在 `http://localhost:5173/`（dev）或 `http://localhost:4173/`（preview）。如需对外访问，可通过 nginx 或 `npm run preview -- --host` 暴露。
 
 ---
 
-## 📦 部署到云端
+## 📌 运维提醒
 
-1. **后端**：通过 `systemd`、`supervisor` 或 `pm2`（配合 `python main.py`）保持 WebSocket 服务常驻，并开放 `8080` 端口。
-2. **前端**：`npm run build` 后将 `dist/` 部署到任何静态服务器（Nginx、Vercel、静态 OSS 等），或直接 `npm run preview` 暴露在 `3000` 端口。
-3. **反向代理**：若需要 HTTPS，可在 Nginx 中配置 `wss://` 转发到本机 `8080`，并让前端通过相同域名访问。
+- 确认浏览器允许访问 `ws://<host>:8080`，否则 FHE/MPC 页面将保持离线状态并在日志面板提示。
+- 如果需要调整密钥轮换周期，可修改 `FHEManager(rotation_interval=...)`，但前端仍会根据 `key_info.rotation_interval` 自动适配倒计时。
+- 旧版数据库 (`backend/database.py`) 和 SecureChat 工具仅作为历史兼容占位，不再被 `main.py` 引用。
 
-完成以上配置后即可在浏览器端体验端到端的安全多方计算演示。祝实验顺利！
+> 建议通过 Git 标签保留 v2.0 之前的 SecureChat 演示，如需对比教学，可在文档中指向该标签。当前主分支聚焦“多算法 FHE + MPC” 核心能力。
