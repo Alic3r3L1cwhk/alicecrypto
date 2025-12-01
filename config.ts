@@ -1,7 +1,7 @@
 
 // === 服务器配置 ===
 
-// 你的阿里云服务器公网 IP
+// 你的服务器公网 IP
 export const SERVER_HOST = 'localhost'; 
 
 export const SERVER_PORT = 8080;
