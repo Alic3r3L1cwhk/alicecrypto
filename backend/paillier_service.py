@@ -13,9 +13,7 @@ _key_lock = threading.Lock()
 KEY_ROTATION_INTERVAL = 5 * 60  # 5分钟
 
 def init_paillier_keys(key_size=2048):
-    """
-    初始化 Paillier 密钥对
-    """
+    """初始化 Paillier 密钥对"""
     global _public_key, _private_key, _key_generated_at
     
     with _key_lock:
@@ -29,15 +27,12 @@ def init_paillier_keys(key_size=2048):
         print(f"[Paillier] 生成时间: {_key_generated_at. strftime('%Y-%m-%d %H:%M:%S')}")
 
 def start_key_rotation(key_size=2048, interval=KEY_ROTATION_INTERVAL):
-    """
-    启动密钥轮换定时器
-    """
+    """启动密钥轮换定时器"""
     def rotation_loop():
         while True:
             time. sleep(interval)
             print(f"\n[Paillier] ===== 密钥轮换开始 =====")
             init_paillier_keys(key_size)
-            print(f"[Paillier] 下次轮换时间: {get_next_rotation_time(). strftime('%Y-%m-%d %H:%M:%S')}")
             print(f"[Paillier] ===== 密钥轮换完成 =====\n")
     
     rotation_thread = threading. Thread(target=rotation_loop, daemon=True)
@@ -45,9 +40,7 @@ def start_key_rotation(key_size=2048, interval=KEY_ROTATION_INTERVAL):
     print(f"[Paillier] 密钥轮换服务已启动，间隔: {interval}秒")
 
 def get_key_info():
-    """
-    获取当前密钥的信息
-    """
+    """获取当前密钥的信息"""
     with _key_lock:
         if _key_generated_at is None:
             return None
@@ -57,28 +50,18 @@ def get_key_info():
         remaining_seconds = max(0, (next_rotation - now). total_seconds())
         
         return {
-            'generated_at': _key_generated_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'generated_at': _key_generated_at. strftime('%Y-%m-%d %H:%M:%S'),
             'generated_at_timestamp': _key_generated_at.timestamp(),
             'next_rotation_at': next_rotation. strftime('%Y-%m-%d %H:%M:%S'),
             'next_rotation_timestamp': next_rotation.timestamp(),
             'remaining_seconds': int(remaining_seconds),
             'rotation_interval': KEY_ROTATION_INTERVAL,
-            'server_time': now. strftime('%Y-%m-%d %H:%M:%S'),
+            'server_time': now.strftime('%Y-%m-%d %H:%M:%S'),
             'server_timestamp': now.timestamp()
         }
 
-def get_next_rotation_time():
-    """
-    获取下次密钥轮换时间
-    """
-    if _key_generated_at is None:
-        return None
-    return _key_generated_at + timedelta(seconds=KEY_ROTATION_INTERVAL)
-
 def get_public_key():
-    """
-    获取公钥信息（供前端使用）
-    """
+    """获取公钥信息"""
     with _key_lock:
         if _public_key is None:
             init_paillier_keys()
@@ -89,9 +72,7 @@ def get_public_key():
         }
 
 def get_public_key_with_info():
-    """
-    获取公钥信息和时间信息
-    """
+    """获取公钥信息和时间信息"""
     pub_key = get_public_key()
     key_info = get_key_info()
     
@@ -101,9 +82,7 @@ def get_public_key_with_info():
     }
 
 def encrypt_value(plaintext):
-    """
-    服务端加密
-    """
+    """服务端加密"""
     with _key_lock:
         if _public_key is None:
             init_paillier_keys()
@@ -112,9 +91,7 @@ def encrypt_value(plaintext):
         return str(encrypted. ciphertext())
 
 def decrypt_value(ciphertext_str):
-    """
-    服务端解密
-    """
+    """服务端解密"""
     with _key_lock:
         if _private_key is None:
             raise Exception("私钥未初始化")
@@ -124,9 +101,7 @@ def decrypt_value(ciphertext_str):
         return _private_key.decrypt(encrypted_number)
 
 def compute_homomorphic_sum(pub_n_str, pub_g_str, ciphertexts):
-    """
-    执行同态加法（使用前端传来的公钥）
-    """
+    """执行同态加法（使用前端传来的公钥）"""
     try:
         pub_n = int(pub_n_str)
         public_key = paillier.PaillierPublicKey(n=pub_n)
@@ -153,9 +128,7 @@ def compute_homomorphic_sum(pub_n_str, pub_g_str, ciphertexts):
         return None
 
 def compute_with_server_key(ciphertexts, return_plaintext=False):
-    """
-    使用服务端密钥进行同态计算
-    """
+    """使用服务端密钥进行同态计算"""
     try:
         with _key_lock:
             if _public_key is None or _private_key is None:
