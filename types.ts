@@ -8,15 +8,15 @@ export interface SocketLog {
   id: string;
   timestamp: string;
   sender: 'CLIENT' | 'SERVER';
-  type: 'INFO' | 'DATA' | 'Handshake' | 'Error';
+  type: 'INFO' | 'DATA' | 'Handshake' | 'Error' | 'WARN';
   message: string;
-  details?: string; // Raw ciphertext or details
+  details?: string;
 }
 
 export interface EncryptedDataPacket {
   id: string;
-  originalValue?: number; // Only known to client
-  ciphertext: string; // The "BigInt" string representation
+  originalValue?: number;
+  ciphertext: string;
 }
 
 export interface ChatMessage {
@@ -26,4 +26,25 @@ export interface ChatMessage {
   decryptedContent: string;
   iv: string;
   timestamp: number;
+}
+
+export interface KeyInfo {
+  generated_at: string;
+  generated_at_timestamp: number;
+  next_rotation_at: string;
+  next_rotation_timestamp: number;
+  remaining_seconds: number;
+  rotation_interval: number;
+  server_time: string;
+  server_timestamp: number;
+}
+
+export interface ServerPublicKey {
+  n: string;
+  g: string;
+}
+
+export interface PaillierKeyData {
+  pub_key: ServerPublicKey;
+  key_info: KeyInfo;
 }
