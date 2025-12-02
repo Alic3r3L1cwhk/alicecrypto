@@ -1,4 +1,4 @@
-# AliceCrypto v2.2 全面隐私计算实验台
+# AliceCrypto v2.2
 
 AliceCrypto v2.2 重新整理了前后端架构，移除了早期的 SecureChat 模拟通道，转而集中展示 **FHE（多算法全同态加密）** 与 **MPC（百万富翁协议 & Shamir 门限方案）** 的端到端链路。所有敏感操作均通过统一的 WebSocket 服务完成，并附带系统时钟与密钥轮换广播，便于课堂或演示场景实时追踪。
 
