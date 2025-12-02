@@ -77,3 +77,62 @@ npm run build && npm run preview
 - 旧版数据库 (`backend/database.py`) 和 SecureChat 工具仅作为历史兼容占位，不再被 `main.py` 引用。
 
 > 建议通过 Git 标签保留 v2.0 之前的 SecureChat 演示，如需对比教学，可在文档中指向该标签。当前主分支聚焦“多算法 FHE + MPC” 核心能力。
+
+---
+
+## ✅ 新增：用户认证与数据库（v2.2 更新）
+
+自 v2.2 起，项目新增了基础的用户认证与持久化存储，用于支持课程演示或多用户体验场景。我们在不改动现有 WebSocket 服务的前提下，引入了一个轻量的 HTTP REST API 层来处理用户注册、登录与会话管理。
+
+- HTTP API 端口：`8081`（开发时与前端分离，生产部署可用反向代理统一域名）
+- WebSocket 端口（不变）：`8080`（FHE / MPC 实时业务）
+
+主要改动概要：
+- 后端（`backend/`）
+     - 新增并扩展 `backend/database.py`：使用 SQLite 存储用户信息（`users`）、会话 (`user_sessions`) 与原有 `messages` 表，密码使用 PBKDF2-SHA256 + 随机盐存储。
+     - 在 `backend/main.py` 中可选启动 HTTP API（依赖 `aiohttp`），并新增以下端点：
+          - `POST /api/auth/register` — 注册（请求体：`{username,password,email?}`）
+          - `POST /api/auth/login` — 登录（请求体：`{username,password}`），返回 `token`
+          - `POST /api/auth/logout` — 登出（Header: `Authorization: Bearer <token>`）
+          - `GET /api/auth/profile` — 获取用户信息（Header: `Authorization: Bearer <token>`）
+          - `GET /api/health` — 健康检查
+     - `requirements.txt` 中新增 `aiohttp` 以支持 REST API（可选安装，若未安装程序仍可仅运行 WebSocket 服务）。
+
+- 前端（React）
+     - 新增 `getHttpUrl()` 与 `HTTP_PORT = 8081` 到 `config.ts`，前端登录组件会调用 `/api/auth/*` 接口完成注册/登录。
+     - `App.tsx` 已集成认证流程：登录成功后将 `token` 与 `username` 保存到 `localStorage`，主界面（`Layout.tsx`）显示登录用户信息并提供登出按钮。
+
+跨域（CORS）说明：
+- 为了让前端开发服务器（例如 `http://localhost:3000`）能调用后端 HTTP API，我们在后端加入了简单的 CORS 中间件，允许来自 `http://localhost:3000` 的请求并处理浏览器的 OPTIONS 预检。如果你将前端部署到其他域名，请相应调整 `backend/main.py` 中的允许来源或使用反向代理进行统一域名部署。
+
+安全与兼容性要点：
+- 密码使用 PBKDF2-SHA256（100000 次迭代）+ 随机盐保存，避免明文或直接哈希存储。
+- 会话使用随机生成的 URL-safe token（32 字节）存于数据库并返回给前端，前端通过 `Authorization: Bearer <token>` 使用受保护的接口。
+- WebSocket 部分（FHE/MPC）未作修改，所有实时协议继续通过端口 `8080` 提供服务，保证向后兼容。
+
+快速启动（关于认证的补充）
+
+1. 启动后端（若计划使用 REST API，先安装 `aiohttp`）：
+
+```powershell
+cd backend
+pip install -r requirements.txt
+python main.py
+```
+
+2. 启动前端并访问登录界面：
+
+```powershell
+# 在项目根目录
+npm install
+npm run dev
+# 访问示例： http://localhost:3000/ 或 README 中提到的 http://localhost:5173/（取决于本地配置）
+```
+
+排查提示：
+- 如果在浏览器控制台或后端日志看到 `OPTIONS` 返回 405 或 CORS 错误，确认后端已安装并启用 `aiohttp`，并且后端日志中显示 HTTP API 启动（`HTTP API 服务器启动在端口 8081`）。
+- 如果不希望使用单独的 HTTP 端口，可在生产中通过 Nginx/反向代理将 `8081` 的路径映射到同一域名下，从而避免 CORS 配置。
+
+---
+
+如果你需要，我可以把 README 中的“部署步骤”段落进一步扩展为分环境（开发 / 生产）说明，或加入 API 示例请求命令块与常见问题排查小节。
